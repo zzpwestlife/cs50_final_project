@@ -1,0 +1,15 @@
+<!-- delete_todo.html -->
+{% extends 'base.html' %}
+{% block title %}
+    Delete To-Do Item
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <h1 class="mt-4">Delete To-Do Item</h1>
+        <p>Are you sure you want to delete the following to-do item?</p>
+        <p><strong>Title:</strong> {{ todo.title }}</p>
+        <form method="POST" action="{{ url_for('delete_todo', todo_id=todo.id) }}">
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+    </div>
+{% endblock %}
