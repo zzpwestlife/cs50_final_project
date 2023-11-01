@@ -7,6 +7,9 @@ app.debug = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:secret@127.0.0.1:33072/flask_db'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+from models import User, Todo
+
 # class Todo(db.Model):
 #     id = db.Column(db.Integer, primary_key=True)
 #     title = db.Column(db.String(100), nullable=False)
@@ -23,10 +26,10 @@ migrate = Migrate(app, db)
 #     migrate.upgrade()
 
 
-@app.route('/')
-def index():
-    todos = []
-    return render_template('index.html', todos=todos)
-
+# @app.route('/')
+# def index():
+#     todos = []
+#     return render_template('index.html', todos=todos)
+#
 if __name__ == '__main__':
     app.run()
