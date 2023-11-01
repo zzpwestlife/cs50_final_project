@@ -13,12 +13,14 @@ app.secret_key = '2b1a07d8b1f3b2c8de3f6b2d5d7f8a7b'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 from models import User, Todo
-logging.basicConfig(filename='app.log', level=logging.DEBUG,
+logging.basicConfig(filename='logs/app.log', level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s: %(message)s')
 
 
@@ -35,7 +37,12 @@ def todo_list():
 
 
 @app.route('/add_todo', methods=['GET', 'POST'])
+@login_required
 def add_todo():
+    user_id = session["user_id"]
+    if user_id is None:
+        return redirect("/login")
+
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
@@ -48,7 +55,12 @@ def add_todo():
 
 # Method for editing a to-do item
 @app.route('/edit_todo/<int:todo_id>', methods=['GET', 'POST'])
+@login_required
 def edit_todo(todo_id):
+    user_id = session["user_id"]
+    if user_id is None:
+        return redirect("/login")
+
     todo = Todo.query.get_or_404(todo_id)
     if request.method == 'POST':
         todo.title = request.form['title']
@@ -60,7 +72,12 @@ def edit_todo(todo_id):
 
 # Method for deleting a to-do item
 @app.route('/delete_todo/<int:todo_id>', methods=['GET', 'POST'])
+@login_required
 def delete_todo(todo_id):
+    user_id = session["user_id"]
+    if user_id is None:
+        return redirect("/login")
+
     todo = Todo.query.get_or_404(todo_id)
     if request.method == 'POST':
         db.session.delete(todo)
@@ -79,14 +96,18 @@ def register():
         existing_user = User.query.filter(
             db.or_(User.username == username, User.email == email)
         ).first()
+
         if existing_user:
-            flash('Username or email already exists. Please try a different one.')
-            return redirect(url_for('register'))
+            flash('Username or email already exists. Please try a different one.', 'alert alert-danger')
+            logging.warn(f"User already exists: {existing_user}")
+            return render_template('register.html')
+
         new_user = User(username=username, email=email, password=password)
         db.session.add(new_user)
         db.session.commit()
-        flash('Registration successful! You can now log in.')
-        return redirect(url_for('login'))
+        flash('Registration successful! You can now log in.', 'alert alert-success')
+        # return redirect(url_for('login'))
+        return render_template('login.html')
 
     return render_template('register.html')
 
@@ -104,9 +125,16 @@ def login():
             session["user_id"] = user.id
             return redirect('/')
         else:
-            flash('Invalid email or password', 'error')
+            flash('Invalid email or password', 'alert alert-danger')
+
     return render_template('login.html')
 
+
+@app.route('/logout')
+@login_required
+def logout():
+    session.clear()
+    return redirect('/login')
 
 if __name__ == '__main__':
     app.run(debug=True)

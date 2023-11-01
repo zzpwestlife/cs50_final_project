@@ -11,6 +11,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(1000), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    deleted_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     @property
     def password(self):
@@ -30,8 +31,11 @@ class User(db.Model):
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(200))
+    description = db.Column(db.String(500), nullable=False)
     completed = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    deleted_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
         return f"Todo: {self.title}"
