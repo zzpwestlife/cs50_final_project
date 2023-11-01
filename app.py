@@ -1,3 +1,5 @@
+import logging
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -16,6 +18,8 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 from models import User, Todo
+logging.basicConfig(filename='app.log', level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s: %(message)s')
 
 
 @app.route('/')
@@ -94,10 +98,11 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        user = User.query.filter_by(email=email, password=password).first()
+        user = User.query.filter_by(email=email).first()
+        logging.info(f"User: {user}")
         if user and user.verify_password(password):
-            session["user_id"] = user["id"]
-            return redirect('/todo_list')
+            session["user_id"] = user.id
+            return redirect('/')
         else:
             flash('Invalid email or password', 'error')
     return render_template('login.html')
