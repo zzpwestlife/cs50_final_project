@@ -1,38 +1,14 @@
-{% extends "layout.html" %}
-
-{% block title %}
-Log In
-{% endblock %}
-
-{% block main %}
-<table class="table tablestriped">
-    <thead>
-    <tr>
-        <th class="text-start">Symbol</th>
-        <th class="text-end">Shares</th>
-        <th class="text-end">Price</th>
-        <th class="text-end">TOTAL</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for share in trades %}
-    <tr>
-        <td class="text-start">{{ share["symbol"] }}</td>
-        <td class="text-end">{{ share["sum_shares"] }}</td>
-        <td class="text-end">{{ share["current_price"] | usd }}</td>
-        <td class="text-end">{{ share["total"] | usd }}</td>
-    </tr>
-    {% endfor %}
-    <tfoot>
-    <tr>
-        <td class="border-0 fw-bold text-end" colspan="3">Cash</td>
-        <td class="border-0 text-end">{{ user[0]["cash"] | usd }}</td>
-    </tr>
-    <tr>
-        <td class="border-0 fw-bold text-end" colspan="3">TOTAL</td>
-        <td class="border-0 w-bold text-end">{{ (user[0]["cash"] + stock_value) | usd }}</td>
-    </tr>
-    </tfoot>
-</table>
-{% endblock %}
-
+<!DOCTYPE html>
+<html>
+ <head>
+   <title>To-Do List</title>
+ </head>
+ <body>
+   <h1>To-Do List</h1>
+   <ul>
+     {% for todo in todos %}
+       <li>{{ todo }}</li>
+     {% endfor %}
+   </ul>
+ </body>
+</html>
