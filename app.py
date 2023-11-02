@@ -23,6 +23,7 @@ Session(app)
 
 from models import User, Todo
 
+
 # logging.basicConfig(filename='logs/app.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 
 @app.route('/')
@@ -47,7 +48,7 @@ def add_todo():
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
-        todo = Todo(user_id=user_id,title=title, description=description)
+        todo = Todo(user_id=user_id, title=title, description=description)
         db.session.add(todo)
         db.session.commit()
         return redirect(url_for('todo_list'))
@@ -66,7 +67,7 @@ def edit_todo(todo_id):
     if request.method == 'POST':
         todo.title = request.form['title']
         db.session.commit()
-        flash('To-Do item updated successfully!', 'success')
+        flash('To-Do item updated successfully!', 'alert alert-success')
         return redirect(url_for('todo_list'))
     return render_template('edit_todo.html', todo=todo)
 
@@ -83,9 +84,32 @@ def delete_todo(todo_id):
     if request.method == 'POST':
         db.session.delete(todo)
         db.session.commit()
-        flash('To-Do item deleted successfully!', 'success')
+        flash('To-Do item deleted successfully!', 'alert alert-success')
         return redirect(url_for('todo_list'))
     return render_template('delete_todo.html', todo=todo)
+
+
+@app.route('/complete_todo/<int:todo_id>', methods=['POST'])
+def complete_todo(todo_id):
+    user_id = session["user_id"]
+    if user_id is None:
+        return redirect("/login")
+
+    todo = Todo.query.get(todo_id)
+    if todo:
+        if todo.user_id != user_id:
+            flash('You are not authorized to complete this to-do item!', 'alert alert-danger')
+            return redirect(url_for('todo_list'))
+
+        if not todo.completed:
+            todo.completed = True
+            db.session.commit()
+            flash('To-do item marked as completed!', 'alert alert-success')
+        else:
+            flash('To-do item is already completed!', 'alert alert-info')
+    else:
+        flash('To-do item not found!', 'alert alert-danger')
+    return redirect(url_for('todo_list'))
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -136,6 +160,7 @@ def login():
 def logout():
     session.clear()
     return redirect('/login')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
