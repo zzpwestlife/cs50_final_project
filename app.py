@@ -3,6 +3,8 @@ import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from sqlalchemy import null
+
 from flask_session import Session
 from helpers import login_required
 
@@ -20,9 +22,8 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 from models import User, Todo
-logging.basicConfig(filename='logs/app.log', level=logging.DEBUG,
-                    format='%(asctime)s %(levelname)s: %(message)s')
 
+# logging.basicConfig(filename='logs/app.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 
 @app.route('/')
 @app.route('/todo_list')
@@ -32,7 +33,7 @@ def todo_list():
     if user_id is None:
         return redirect("/login")
 
-    todos = Todo.query.all()
+    todos = Todo.query.filter_by(user_id=user_id).filter(Todo.deleted_at.is_(None)).all()
     return render_template('todo_list.html', todos=todos)
 
 
@@ -46,7 +47,7 @@ def add_todo():
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
-        todo = Todo(title=title, description=description)
+        todo = Todo(user_id=user_id,title=title, description=description)
         db.session.add(todo)
         db.session.commit()
         return redirect(url_for('todo_list'))

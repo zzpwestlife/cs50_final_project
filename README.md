@@ -18,6 +18,8 @@ cd ..
 flask run
 ```
 
+visit http://127.0.0.1/5000
+
 ### 4. monitor the logs
 
 ```shell
@@ -31,3 +33,10 @@ flask db migrate -m "add deleted_at field to all tables"
 
 flask db upgrade
 ```
+
+# TODO
+
+- [x] filter my list, and authorization
+- [x] add category and color
+- [x] add deadline
+- [x] add reminder and send email by cron

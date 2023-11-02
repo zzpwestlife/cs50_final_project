@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS `todo`;
 CREATE TABLE `todo`
 (
     `id`           int          NOT NULL AUTO_INCREMENT,
+    `user_id`      int          NOT NULL DEFAULT '0',
     `title`        varchar(100) NOT NULL DEFAULT '',
     `description`  varchar(500) NOT NULL DEFAULT '',
     `completed`    tinyint(1) NOT NULL DEFAULT '0',
