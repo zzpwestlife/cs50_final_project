@@ -11,6 +11,15 @@
                 <label for="title">Title:</label>
                 <input type="text" id="title" name="title" class="form-control" value="{{ todo.title }}" required>
             </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" class="form-control">{{ todo.description }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="deadline">Deadline:</label>
+                <input type="datetime-local" id="deadline" name="deadline" class="form-control"
+                       value="{{ todo.deadline.strftime('%Y-%m-%dT%H:%M') }}" required>
+            </div>
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
     </div>

@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy import null
+from datetime import datetime
 
 from flask_session import Session
 from helpers import login_required
@@ -48,7 +49,8 @@ def add_todo():
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
-        todo = Todo(user_id=user_id, title=title, description=description)
+        deadline = request.form.get('deadline')
+        todo = Todo(user_id=user_id, title=title, description=description, deadline=deadline)
         db.session.add(todo)
         db.session.commit()
         return redirect(url_for('todo_list'))
@@ -66,6 +68,8 @@ def edit_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
     if request.method == 'POST':
         todo.title = request.form['title']
+        todo.description = request.form['description']
+        todo.deadline = request.form['deadline']
         db.session.commit()
         flash('To-Do item updated successfully!', 'alert alert-success')
         return redirect(url_for('todo_list'))
