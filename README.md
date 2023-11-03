@@ -36,7 +36,4 @@ flask db upgrade
 
 # TODO
 
-- [x] filter my list, and authorization
-- [x] add category and color
-- [x] add deadline
 - [x] add reminder and send email by cron

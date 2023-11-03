@@ -23,6 +23,13 @@ Session(app)
 from models import User, Todo
 from helpers import login_required
 
+from mailjet_rest import Client
+import os
+
+api_key = '25c155cab4f2ba7978a230600293dda8'
+api_secret = 'a1a7dc7d1c53aaa201797f8c3570d97b'
+mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
 
 # logging.basicConfig(filename='logs/app.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 
@@ -148,6 +155,46 @@ def login():
 def logout():
     session.clear()
     return redirect('/login')
+
+
+def send_email(todo_id):
+    todo = Todo.query.get(todo_id)
+    if todo:
+        if todo.completed:
+            return True
+        else:
+            user = User.query.get(todo.user_id)
+            if not user:
+                return False
+    else:
+        return False
+
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": "zzpwestlife@gmail.com",
+                    "Name": "Joey"
+                },
+                "To": [
+                    {
+                        "Email": user.email,
+                        "Name": user.username,
+                    }
+                ],
+                "Subject": "Complete your to-do item now!",
+                "TextPart": "You have set the deadline for this item",
+                "HTMLPart": "<h3>Dear {}, please visit <a href='http://127.0.0.1:5000/edit_todo/{}'>here</a> to complete your to-do. <br> May the flask force be with you!<h3>".format(
+                    user.username, todo.id),
+                "CustomID": str(todo.id)
+            }
+        ]
+    }
+
+    result = mailjet.send.create(data=data)
+    print(result.status_code)
+    print(result.json())
+    return redirect('/todo_list')
 
 
 if __name__ == '__main__':
