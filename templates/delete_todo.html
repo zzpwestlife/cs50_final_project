@@ -8,6 +8,8 @@
         <h1 class="mt-4">Delete To-Do Item</h1>
         <p>Are you sure you want to delete the following to-do item?</p>
         <p><strong>Title:</strong> {{ todo.title }}</p>
+        <p>Description: {{ todo.description }}</p>
+        <p>Deadline: {{ todo.deadline }}</p>
         <form method="POST" action="{{ url_for('delete_todo', todo_id=todo.id) }}">
             <button type="submit" class="btn btn-danger">Delete</button>
         </form>

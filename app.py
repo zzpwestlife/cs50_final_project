@@ -7,12 +7,10 @@ from sqlalchemy import null
 from datetime import datetime
 
 from flask_session import Session
-from helpers import login_required
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:secret@127.0.0.1:33072/flask_db'
 app.config['SECRET_KEY'] = '2b1a07d8b1f3b2c8de3f6b2d5d7f8a7b'
-app.secret_key = '2b1a07d8b1f3b2c8de3f6b2d5d7f8a7b'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -23,19 +21,18 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 from models import User, Todo
+from helpers import login_required
 
 
 # logging.basicConfig(filename='logs/app.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+
 
 @app.route('/')
 @app.route('/todo_list')
 @login_required
 def todo_list():
     user_id = session["user_id"]
-    if user_id is None:
-        return redirect("/login")
-
-    todos = Todo.query.filter_by(user_id=user_id).filter(Todo.deleted_at.is_(None)).all()
+    todos = Todo.query.filter_by(user_id=user_id, completed=0).filter(Todo.deleted_at.is_(None)).all()
     return render_template('todo_list.html', todos=todos)
 
 
@@ -43,9 +40,6 @@ def todo_list():
 @login_required
 def add_todo():
     user_id = session["user_id"]
-    if user_id is None:
-        return redirect("/login")
-
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
@@ -57,14 +51,9 @@ def add_todo():
     return render_template('add_todo.html')
 
 
-# Method for editing a to-do item
 @app.route('/edit_todo/<int:todo_id>', methods=['GET', 'POST'])
 @login_required
 def edit_todo(todo_id):
-    user_id = session["user_id"]
-    if user_id is None:
-        return redirect("/login")
-
     todo = Todo.query.get_or_404(todo_id)
     if request.method == 'POST':
         todo.title = request.form['title']
@@ -76,15 +65,15 @@ def edit_todo(todo_id):
     return render_template('edit_todo.html', todo=todo)
 
 
-# Method for deleting a to-do item
 @app.route('/delete_todo/<int:todo_id>', methods=['GET', 'POST'])
 @login_required
 def delete_todo(todo_id):
     user_id = session["user_id"]
-    if user_id is None:
-        return redirect("/login")
-
     todo = Todo.query.get_or_404(todo_id)
+    if todo.user_id != user_id:
+        flash('You are not authorized to delete this to-do item!', 'alert alert-danger')
+        return redirect(url_for('todo_list'))
+
     if request.method == 'POST':
         db.session.delete(todo)
         db.session.commit()
@@ -96,9 +85,6 @@ def delete_todo(todo_id):
 @app.route('/complete_todo/<int:todo_id>', methods=['POST'])
 def complete_todo(todo_id):
     user_id = session["user_id"]
-    if user_id is None:
-        return redirect("/login")
-
     todo = Todo.query.get(todo_id)
     if todo:
         if todo.user_id != user_id:
@@ -118,6 +104,8 @@ def complete_todo(todo_id):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    session.clear()
+
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
@@ -128,14 +116,12 @@ def register():
 
         if existing_user:
             flash('Username or email already exists. Please try a different one.', 'alert alert-danger')
-            logging.warn(f"User already exists: {existing_user}")
             return render_template('register.html')
 
         new_user = User(username=username, email=email, password=password)
         db.session.add(new_user)
         db.session.commit()
         flash('Registration successful! You can now log in.', 'alert alert-success')
-        # return redirect(url_for('login'))
         return render_template('login.html')
 
     return render_template('register.html')
@@ -144,17 +130,15 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     session.clear()
-
     if request.method == 'POST':
-        email = request.form.get('email')
+        username = request.form.get('username')
         password = request.form.get('password')
-        user = User.query.filter_by(email=email).first()
-        logging.info(f"User: {user}")
+        user = User.query.filter_by(username=username).first()
         if user and user.verify_password(password):
             session["user_id"] = user.id
             return redirect('/')
         else:
-            flash('Invalid email or password', 'alert alert-danger')
+            flash('Invalid username or password', 'alert alert-danger')
 
     return render_template('login.html')
 
