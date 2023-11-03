@@ -23,6 +23,7 @@ CREATE TABLE `todo`
     `title`        varchar(100) NOT NULL DEFAULT '',
     `description`  varchar(500) NOT NULL DEFAULT '',
     `completed`    tinyint(1) NOT NULL DEFAULT '0',
+    `notified`     tinyint(1) NOT NULL DEFAULT '0',
     `completed_at` datetime              DEFAULT NULL,
     `deadline`     datetime              DEFAULT NULL,
     `created_at`   datetime              DEFAULT NULL,

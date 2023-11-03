@@ -28,8 +28,7 @@ api_key = '25c155cab4f2ba7978a230600293dda8'
 api_secret = 'a1a7dc7d1c53aaa201797f8c3570d97b'
 mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
-
-# logging.basicConfig(filename='logs/app.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+logging.basicConfig(filename='logs/app.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 
 
 @app.route('/')
@@ -49,7 +48,7 @@ def add_todo():
         title = request.form.get('title')
         description = request.form.get('description')
         deadline = request.form.get('deadline')
-        todo = Todo(user_id=user_id, title=title, description=description, deadline=deadline)
+        todo = Todo(user_id=user_id, title=title, description=description, deadline=deadline, completed=False, notified=False)
         db.session.add(todo)
         db.session.commit()
         return redirect(url_for('todo_list'))
@@ -159,15 +158,22 @@ def logout():
 def cron_send_email():
     logging.info("cron_send_email!")
     current_time = datetime.now()
-    deadline_limit = current_time + timedelta(minutes=5)
+    deadline_limit = current_time + timedelta(hours=8)
+    logging.info("current_time: {}".format(current_time))
+    logging.info("deadline_limit: {}".format(deadline_limit))
     todos = Todo.query.filter(
         Todo.deadline <= deadline_limit,
-        Todo.completed == False
+        Todo.deadline >= current_time,
+        Todo.completed == False,
+        Todo.notified == False
     ).all()
 
     for todo in todos:
         logging.info("Sending email for todo: {}".format(todo.id))
-        send_email(todo.id)
+        result = send_email(todo.id)
+        if result:
+            todo.notified = True
+            db.session.commit()
 
     return "Cron job executed successfully!"
 
