@@ -34,6 +34,9 @@ flask db migrate -m "add deleted_at field to all tables"
 flask db upgrade
 ```
 
-# TODO
+crontab
 
-- [x] add reminder and send email by cron
+```shell
+$ crontab -l
+* * * * * curl http://127.0.0.1:5000/cron_send_email
+```

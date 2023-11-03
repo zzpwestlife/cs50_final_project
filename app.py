@@ -3,12 +3,11 @@ import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from sqlalchemy import null
-from datetime import datetime
-
+from datetime import datetime, timedelta
 from flask_session import Session
 
 app = Flask(__name__)
+app.debug = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:secret@127.0.0.1:33072/flask_db'
 app.config['SECRET_KEY'] = '2b1a07d8b1f3b2c8de3f6b2d5d7f8a7b'
 db = SQLAlchemy(app)
@@ -24,7 +23,6 @@ from models import User, Todo
 from helpers import login_required
 
 from mailjet_rest import Client
-import os
 
 api_key = '25c155cab4f2ba7978a230600293dda8'
 api_secret = 'a1a7dc7d1c53aaa201797f8c3570d97b'
@@ -157,16 +155,36 @@ def logout():
     return redirect('/login')
 
 
+@app.route('/cron_send_email')
+def cron_send_email():
+    logging.info("cron_send_email!")
+    current_time = datetime.now()
+    deadline_limit = current_time + timedelta(minutes=5)
+    todos = Todo.query.filter(
+        Todo.deadline <= deadline_limit,
+        Todo.completed == False
+    ).all()
+
+    for todo in todos:
+        logging.info("Sending email for todo: {}".format(todo.id))
+        send_email(todo.id)
+
+    return "Cron job executed successfully!"
+
+
 def send_email(todo_id):
     todo = Todo.query.get(todo_id)
     if todo:
         if todo.completed:
+            logging.info("Todo {} is already completed!".format(todo.id))
             return True
         else:
             user = User.query.get(todo.user_id)
             if not user:
+                logging.info("User {} not found!".format(todo.user_id))
                 return False
     else:
+        logging.info("Todo {} not found!".format(todo_id))
         return False
 
     data = {
@@ -184,18 +202,24 @@ def send_email(todo_id):
                 ],
                 "Subject": "Complete your to-do item now!",
                 "TextPart": "You have set the deadline for this item",
-                "HTMLPart": "<h3>Dear {}, please visit <a href='http://127.0.0.1:5000/edit_todo/{}'>here</a> to complete your to-do. <br> May the flask force be with you!<h3>".format(
-                    user.username, todo.id),
+                "HTMLPart": "<h3>Dear {}, <br>"
+                            "please visit <a href='http://127.0.0.1:5000'>here</a> to complete your to-do. <br><br>"
+                            "Title: {} <br>"
+                            "Description: {} <br>"
+                            "Deadline: {} <br>"
+                            " <br> May the flask force be with you!<h3>".format(
+                    user.username, todo.title, todo.description, todo.deadline),
                 "CustomID": str(todo.id)
             }
         ]
     }
 
     result = mailjet.send.create(data=data)
-    print(result.status_code)
-    print(result.json())
-    return redirect('/todo_list')
+    logging.info("Mailjet result: {}".format(result.status_code))
+    if result.status_code != 200:
+        return False
+    return True
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
