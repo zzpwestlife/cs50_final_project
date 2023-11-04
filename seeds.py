@@ -4,13 +4,10 @@ from models import User, Todo
 
 def seed_user():
     with app.app_context():
-        # Create example users
         user1 = User(username="user1", email="user1@example.com")
         user2 = User(username="user2", email="user2@example.com")
-        # Add the users to the session
         db.session.add(user1)
         db.session.add(user2)
-        # Commit the changes to the database
         db.session.commit()
 
 
@@ -23,6 +20,5 @@ def seed_todo():
         db.session.commit()
 
 
-# Call the seed function to insert the records
 seed_user()
 seed_todo()

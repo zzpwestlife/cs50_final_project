@@ -1,5 +1,4 @@
 from app import db
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
@@ -34,6 +33,7 @@ class Todo(db.Model):
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(500), nullable=False)
     completed = db.Column(db.Boolean, default=False)
+    notified = db.Column(db.Boolean, default=False)
     deadline = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

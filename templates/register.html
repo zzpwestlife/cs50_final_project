@@ -12,10 +12,12 @@
             max-width: 400px;
         }
     </style>
+
     <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 </head>
+
 <body>
 <div class="container">
     <h2>Register</h2>
@@ -26,6 +28,7 @@
             </div>
         {% endif %}
     {% endwith %}
+
     <form method="POST" action="/register">
         <div class="form-group">
             <label for="username">Username</label>
@@ -49,10 +52,12 @@
 
         <button type="submit" class="btn btn-primary mt-2">Register</button>
     </form>
+
     <div class="mt-3">
         <a class="mt-3" href="/login">Already have an account? Login</a>
     </div>
 </div>
+
 <script>
     $(function () {
         $('[data-toggle="tooltip"]').tooltip()
