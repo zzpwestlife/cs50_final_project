@@ -25,7 +25,7 @@ from helpers import login_required
 from mailjet_rest import Client
 
 api_key = '25c155cab4f2ba7978a230600293dda8'
-api_secret = 'a1a7dc7d1c53aaa201797f8c3570d97b'
+api_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 mailjet = Client(auth=(api_key, api_secret), version='v3.1')
 
 # logging.basicConfig(filename='logs/app.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
